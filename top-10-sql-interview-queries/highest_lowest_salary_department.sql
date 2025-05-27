@@ -38,8 +38,7 @@ GROUP BY department;
 
 -- Solution 2:
 SELECT 
-    department,
+    *,
     MAX(salary) OVER (PARTITION BY department ORDER BY salary DESC) AS highest_salary,
     MIN(salary) OVER (PARTITION BY department ORDER BY salary ASC) AS lowest_salary
-FROM public.employees
-GROUP BY department;
+FROM public.employees;
