@@ -21,3 +21,41 @@ INSERT INTO public.cars_travel(car_id, cars, days, cumulative_distance) VALUES (
 SELECT *, cumulative_distance - LAG(cumulative_distance, 1, 0) OVER (PARTITION BY cars ORDER BY days) as distance_traveled
 FROM public.cars_travel;
 
+-- Solution 2:
+WITH cte AS (
+    SELECT 
+        car_id,
+        cars,
+        days,
+        cumulative_distance,
+        LAG(cumulative_distance, 1, 0) OVER (PARTITION BY cars ORDER BY days) AS previous_distance
+    FROM public.cars_travel
+)
+SELECT 
+    car_id,
+    cars,
+    days,
+    cumulative_distance,
+    cumulative_distance - previous_distance AS distance_traveled
+FROM cte
+ORDER BY cars, days;
+
+-- Solution 3:
+WITH cte AS (
+    SELECT 
+        car_id,
+        cars,
+        days,
+        cumulative_distance,
+        ROW_NUMBER() OVER (PARTITION BY cars ORDER BY days) AS rn
+    FROM public.cars_travel
+)
+SELECT 
+    c1.car_id,
+    c1.cars,
+    c1.days,
+    c1.cumulative_distance,
+    COALESCE(c1.cumulative_distance - c2.cumulative_distance, c1.cumulative_distance) AS distance_traveled
+FROM cte c1
+LEFT JOIN cte c2 ON c1.cars = c2.cars AND c1.rn = c2.rn + 1
+ORDER BY c1.cars, c1.days;
