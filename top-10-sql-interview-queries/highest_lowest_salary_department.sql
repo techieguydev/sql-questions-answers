@@ -37,8 +37,14 @@ FROM RankedSalaries
 GROUP BY department;
 
 -- Solution 2:
-SELECT 
+WITH cte as (SELECT 
     *,
     MAX(salary) OVER (PARTITION BY department ORDER BY salary DESC) AS highest_salary,
     MIN(salary) OVER (PARTITION BY department ORDER BY salary ASC) AS lowest_salary
-FROM public.employees;
+FROM public.employees)
+SELECT
+    department,
+    MAX(CASE WHEN salary = highest_salary THEN name END) AS highest_salary_employee,
+    MAX(CASE WHEN salary = lowest_salary THEN name END) AS lowest_salary_employee
+FROM cte
+GROUP BY department;
