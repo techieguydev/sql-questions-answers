@@ -23,3 +23,35 @@ INSERT INTO public.employees(id, name, manager_id, salary, designation) VALUES (
 
 -- Query to find the employee hierarchy in a company
 -- Solution 1: Using a recursive CTE to find the hierarchy
+WITH RECURSIVE EmployeeHierarchy AS (
+    SELECT 
+        id,
+        name,
+        manager_id,
+        salary,
+        designation,
+        0 AS level
+    FROM public.employees
+    WHERE manager_id IS NULL  -- Start with the top-level employee (CEO)
+    
+    UNION ALL
+    
+    SELECT 
+        e.id,
+        e.name,
+        e.manager_id,
+        e.salary,
+        e.designation,
+        eh.level + 1
+    FROM public.employees e
+    JOIN EmployeeHierarchy eh ON e.manager_id = eh.id
+)
+SELECT 
+    id,
+    name,
+    manager_id,
+    salary,
+    designation,
+    level
+FROM EmployeeHierarchy
+ORDER BY level, name;
